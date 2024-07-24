@@ -133,10 +133,6 @@ abstract class ConvertToDeltaCommandBase(
         case _: DeltaTableV2 =>
           // Already a Delta table
           None
-        case other =>
-          throw DeltaErrors.operationNotSupportedException(
-            s"Converting an unsupported table type $other to a Delta table",
-            tableIdentifier)
       }
     } else {
       Some(ConvertTarget(
