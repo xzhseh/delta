@@ -3036,8 +3036,9 @@
     "sqlState" : "42846"
   },
   "DELTA_VERSIONS_NOT_CONTIGUOUS" : {
-    "message" : [
-      "Versions (<versionList>) are not contiguous."
+    "message": [
+      "Versions (<versionList>) are not contiguous.",
+      "A gap in the delta log between versions <startVersion> and <endVersion> was detected while trying to load version <versionToLoad>."
     ],
     "sqlState" : "KD00C"
   },

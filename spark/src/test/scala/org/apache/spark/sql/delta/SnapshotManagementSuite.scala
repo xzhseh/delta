@@ -21,6 +21,8 @@ import java.util.concurrent.CountDownLatch
 
 import scala.collection.mutable
 
+import org.apache.spark.sql.delta.DeltaTestUtils.createTestAddFile
+
 import com.databricks.spark.util.{Log4jUsageLogger, UsageRecord}
 import org.apache.spark.sql.delta.DeltaConfigs.COORDINATED_COMMITS_COORDINATOR_NAME
 import org.apache.spark.sql.delta.DeltaTestUtils.{verifyBackfilled, verifyUnbackfilled, BOOLEAN_DOMAIN}
@@ -333,57 +335,66 @@ class SnapshotManagementSuite extends QueryTest with DeltaSQLTestUtils with Shar
       spark,
       versions = Array.empty,
       expectedStartVersion = None,
-      expectedEndVersion = None)
+      expectedEndVersion = None,
+      cachedSnapshot = None)
     // contiguous versions
     verifyDeltaVersions(
       spark,
       versions = Array(1, 2, 3),
       expectedStartVersion = None,
-      expectedEndVersion = None)
+      expectedEndVersion = None,
+      cachedSnapshot = None)
     // contiguous versions with correct `expectedStartVersion` and `expectedStartVersion`
     verifyDeltaVersions(
       spark,
       versions = Array(1, 2, 3),
       expectedStartVersion = None,
-      expectedEndVersion = Some(3))
+      expectedEndVersion = Some(3),
+      cachedSnapshot = None)
     verifyDeltaVersions(
       spark,
       versions = Array(1, 2, 3),
       expectedStartVersion = Some(1),
-      expectedEndVersion = None)
+      expectedEndVersion = None,
+      cachedSnapshot = None)
     verifyDeltaVersions(
       spark,
       versions = Array(1, 2, 3),
       expectedStartVersion = Some(1),
-      expectedEndVersion = Some(3))
+      expectedEndVersion = Some(3),
+      cachedSnapshot = None)
     // `expectedStartVersion` or `expectedEndVersion` doesn't match
     intercept[IllegalArgumentException] {
       verifyDeltaVersions(
         spark,
         versions = Array(1, 2),
         expectedStartVersion = Some(0),
-        expectedEndVersion = None)
+        expectedEndVersion = None,
+        cachedSnapshot = None)
     }
     intercept[IllegalArgumentException] {
       verifyDeltaVersions(
         spark,
         versions = Array(1, 2),
         expectedStartVersion = None,
-        expectedEndVersion = Some(3))
+        expectedEndVersion = Some(3),
+        cachedSnapshot = None)
     }
     intercept[IllegalArgumentException] {
       verifyDeltaVersions(
         spark,
         versions = Array.empty,
         expectedStartVersion = Some(0),
-        expectedEndVersion = None)
+        expectedEndVersion = None,
+        cachedSnapshot = None)
     }
     intercept[IllegalArgumentException] {
       verifyDeltaVersions(
         spark,
         versions = Array.empty,
         expectedStartVersion = None,
-        expectedEndVersion = Some(3))
+        expectedEndVersion = Some(3),
+        cachedSnapshot = None)
     }
     // non contiguous versions
     intercept[IllegalStateException] {
@@ -391,7 +402,8 @@ class SnapshotManagementSuite extends QueryTest with DeltaSQLTestUtils with Shar
         spark,
         versions = Array(1, 3),
         expectedStartVersion = None,
-        expectedEndVersion = None)
+        expectedEndVersion = None,
+        cachedSnapshot = None)
     }
     // duplicates in versions
     intercept[IllegalStateException] {
@@ -399,7 +411,8 @@ class SnapshotManagementSuite extends QueryTest with DeltaSQLTestUtils with Shar
         spark,
         versions = Array(1, 2, 2, 3),
         expectedStartVersion = None,
-        expectedEndVersion = None)
+        expectedEndVersion = None,
+        cachedSnapshot = None)
     }
     // unsorted versions
     intercept[IllegalStateException] {
@@ -407,7 +420,8 @@ class SnapshotManagementSuite extends QueryTest with DeltaSQLTestUtils with Shar
         spark,
         versions = Array(3, 2, 1),
         expectedStartVersion = None,
-        expectedEndVersion = None)
+        expectedEndVersion = None,
+        cachedSnapshot = None)
     }
   }
 

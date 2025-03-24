@@ -17,6 +17,7 @@
 package org.apache.spark.sql.delta
 
 import org.apache.spark.sql.delta.actions.Action
+import org.apache.spark.sql.delta.metering.DeltaLogging
 import org.apache.spark.sql.delta.storage.ClosableIterator
 import org.apache.spark.sql.delta.util.FileNames.DeltaFile
 import org.apache.hadoop.conf.Configuration
@@ -68,7 +69,33 @@ object DeltaFileProviderUtils {
         .toSeq
     // Verify that we got the entire range requested
     if (result.size.toLong != endVersion - startVersion + 1) {
-      throw DeltaErrors.deltaVersionsNotContiguousException(spark, result.map(_._2))
+      val snapshot = deltaLog.unsafeVolatileSnapshot
+      recordDeltaEvent(
+        deltaLog = deltaLog,
+        opType = "delta.exceptions.deltaVersionsNotContiguous",
+        data = Map(
+          // Basically capture the stack trace info of [[Caller]].verifyDeltaVersions,
+          // so that we have better visibility of where this exception is thrown,
+          // plus the specific context, e.g.,
+          // [[(..more..).IcebergConverter.convertSnapshot.getDeltaFilesInVersionRange]].
+          //   ^ -------------- The Caller --------------^ ^------- Current ---------^
+          // Specifically, we include the first ten [[StackTraceElement]]s.
+          "stackTrace" -> Thread.currentThread().getStackTrace.take(10),
+          "startVersion" -> startVersion,
+          "endVersion" -> endVersion,
+          "unsafeVolatileSnapshot.latestCheckpointVersion" -> snapshot.checkpointProvider.version,
+          "unsafeVolatileSnapshot.latestSnapshotVersion" -> snapshot.version,
+          "unsafeVolatileSnapshot.checksumOpt" -> snapshot.checksumOpt
+        ))
+      throw DeltaErrors.deltaVersionsNotContiguousException(
+        spark = spark,
+        deltaVersions = result.map(_._2),
+        startVersion = startVersion,
+        endVersion = endVersion,
+        // Get the latest snapshot version for visibility when throwing the exception,
+        // this is not exactly "the version to load snapshot" but
+        // we just use the latest snapshot version here.
+        versionToLoad = snapshot.version)
     }
     result.map(_._1)
   }
