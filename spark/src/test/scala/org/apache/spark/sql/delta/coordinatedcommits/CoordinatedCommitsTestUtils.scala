@@ -170,6 +170,12 @@ trait CatalogOwnedTestBaseSuite
       spark.conf.getOption(
         DeltaConfigs.IN_COMMIT_TIMESTAMPS_ENABLED.defaultTablePropertyKey).contains("true")
   }
+
+  protected def isICTEnabledForNewTables: Boolean = {
+    catalogOwnedCoordinatorBackfillBatchSize.nonEmpty ||
+      spark.conf.getOption(
+        DeltaConfigs.IN_COMMIT_TIMESTAMPS_ENABLED.defaultTablePropertyKey).contains("true")
+  }
 }
 
 trait CoordinatedCommitsTestUtils
