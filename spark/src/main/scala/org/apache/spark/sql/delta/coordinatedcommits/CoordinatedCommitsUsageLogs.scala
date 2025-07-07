@@ -16,6 +16,17 @@
 
 package org.apache.spark.sql.delta.coordinatedcommits
 
+/** Class containing usage logs emitted by Catalog Owned. */
+object CatalogOwnedUsageLogs {
+  /** Common prefix for all catalog-owned usage logs. */
+  val PREFIX = "delta.catalogOwned"
+
+  /** Usage log emitted when we populate the commit coordinator without the UC_TABLE_ID. */
+  val COMMIT_COORDINATOR_POPULATION_WITHOUT_UC_TABLE_ID =
+    s"$PREFIX.commitCoordinatorPopulation.withoutUCTableId"
+
+}
+
 /** Class containing usage logs emitted by Coordinated Commits. */
 object CoordinatedCommitsUsageLogs {
 
