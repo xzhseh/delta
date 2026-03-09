@@ -2396,8 +2396,6 @@ object MonotonicallyIncreasingTimestampFS {
 // and the filesystem. This follows the same pattern as other CatalogManaged (CCv2) test suites
 // (DeltaLogSuite, DeltaCDCStreamSuite, etc.).
 
-// TODO(LC-9140): Migrate path-based UTs to name-based for CC suites and enable path-based access
-//                blocking. Deferring this for now, as the change requires a large refactor.
 class DeltaSourceWithCatalogManagedBatch1Suite extends DeltaSourceSuite {
   override def catalogOwnedCoordinatorBackfillBatchSize: Option[Int] = Some(1)
 }

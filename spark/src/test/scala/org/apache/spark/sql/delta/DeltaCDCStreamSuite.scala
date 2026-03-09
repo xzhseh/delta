@@ -392,13 +392,11 @@ trait DeltaCDCStreamSuiteBase extends StreamTest with DeltaSQLCommandTest
     withSQLConf(
       // When DeletionVectors are enabled (e.g., via CatalogManaged QoL features), a truly no-op
       // merge (all WHEN conditions false) produces empty actions (no FileActions) because
-      // writeUnmodifiedRows=false in the DV path. In OSS the default isolation level is
-      // Serializable; with noDataChanged=true, canDowngradeToSnapshotIsolation succeeds and the
-      // transaction runs at SnapshotIsolation, so skipRecordingEmptyCommitAllowed returns true
-      // and commitIfNeeded skips the commit entirely. (In Edge the default is WriteSerializable,
-      // which also requires !opChangesData; since Merge has changesData=true, the downgrade is
-      // blocked and the commit proceeds.) This test requires version 1 to exist for streaming,
-      // so we force the classic copy-on-write merge path.
+      // writeUnmodifiedRows=false in the DV path. The default table isolation level (Serializable)
+      // allows canDowngradeToSnapshotIsolation to succeed (noDataChanged=true is sufficient), so
+      // the transaction runs at SnapshotIsolation and skipRecordingEmptyCommitAllowed returns
+      // true, causing commitIfNeeded to skip the commit entirely. This test requires version 1
+      // to exist for streaming, so we force the classic copy-on-write merge path.
       DeltaSQLConf.MERGE_USE_PERSISTENT_DELETION_VECTORS.key -> "false",
       cdcConfig.defaultTablePropertyKey -> "true"
     ) {
@@ -1081,8 +1079,6 @@ class DeltaCDCStreamSuite extends DeltaCDCStreamSuiteBase
 // and the filesystem. This follows the same pattern as other CatalogManaged (CCv2) test suites
 // (DeltaLogSuite, DeltaSourceSuite, etc.).
 
-// TODO(LC-9140): Migrate path-based UTs to name-based for CC suites and enable path-based access
-//                blocking. Deferring this for now, as the change requires a large refactor.
 class DeltaCDCStreamWithCatalogManagedBatch1Suite
   extends DeltaCDCStreamSuite {
   override def catalogOwnedCoordinatorBackfillBatchSize: Option[Int] = Some(1)

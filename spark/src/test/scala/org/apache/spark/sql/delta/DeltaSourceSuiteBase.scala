@@ -127,7 +127,7 @@ trait DeltaSourceSuiteBase extends StreamTest
       // ICT, the CatalogManaged commit coordinator rejects the commit because it requires
       // commitTimestamp on every version. This is a test-only issue: txn.commit is not a
       // user-facing table creation API, and production tables always go through the full DDL
-      // path. We enable ICT manually here as the simplest fix (see PR #153359).
+      // path. We enable ICT manually here as the simplest fix.
       baseMetadata.configuration +
         (DeltaConfigs.IN_COMMIT_TIMESTAMPS_ENABLED.key -> "true")
     } else {
