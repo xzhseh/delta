@@ -299,6 +299,10 @@ object CatalogOwnedTableUtils extends DeltaLogging {
       propKeysToUnset: Seq[String]): Unit = {
     if (snapshot.isCatalogOwned) {
       verifyNotContainsICTConfigurations(propKeys = propKeysToUnset)
+      if (propKeysToUnset.contains(UCCommitCoordinatorClient.UC_TABLE_ID_KEY)) {
+        throw DeltaErrors.cannotModifyTableProperty(
+          prop = UCCommitCoordinatorClient.UC_TABLE_ID_KEY)
+      }
     }
   }
 

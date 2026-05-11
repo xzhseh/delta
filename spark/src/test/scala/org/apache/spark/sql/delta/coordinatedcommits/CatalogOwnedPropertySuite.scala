@@ -225,6 +225,43 @@ class CatalogOwnedPropertySuite extends QueryTest
     }
   }
 
+  test("[UNSET] unsetting table UUID from catalog-owned table should be blocked") {
+    withTable("t1") {
+      createTableAndValidateCatalogOwned(tableName = "t1", withCatalogOwned = true)
+
+      val error = intercept[DeltaUnsupportedOperationException] {
+        sql(s"ALTER TABLE t1 UNSET TBLPROPERTIES " +
+          s"('${UCCommitCoordinatorClient.UC_TABLE_ID_KEY}')")
+      }
+      checkError(error, "DELTA_CANNOT_MODIFY_TABLE_PROPERTY", "42939",
+        Map("prop" -> "io.unitycatalog.tableId"))
+    }
+  }
+
+  test("[UNSET] IF EXISTS does not silence table UUID unset for catalog-owned table") {
+    withTable("t1") {
+      createTableAndValidateCatalogOwned(tableName = "t1", withCatalogOwned = true)
+
+      val error = intercept[DeltaUnsupportedOperationException] {
+        sql(s"ALTER TABLE t1 UNSET TBLPROPERTIES IF EXISTS " +
+          s"('${UCCommitCoordinatorClient.UC_TABLE_ID_KEY}')")
+      }
+      checkError(error, "DELTA_CANNOT_MODIFY_TABLE_PROPERTY", "42939",
+        Map("prop" -> "io.unitycatalog.tableId"))
+    }
+  }
+
+  test("[UNSET] unsetting table UUID from non-catalog-owned table keeps existing behavior") {
+    withTable("t1") {
+      createTableAndValidateCatalogOwned(tableName = "t1", withCatalogOwned = false)
+
+      sql(s"ALTER TABLE t1 UNSET TBLPROPERTIES " +
+        s"('${UCCommitCoordinatorClient.UC_TABLE_ID_KEY}')")
+
+      validateCatalogOwnedAndUCTableId(tableName = "t1", expected = false)
+    }
+  }
+
   test("[REPLACE] Specifying CatalogManaged for non-CatalogManaged table should " +
       "be blocked during REPLACE TABLE") {
     withTable("t1") {
